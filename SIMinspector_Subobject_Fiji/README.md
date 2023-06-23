@@ -2,7 +2,7 @@ The aim of this macro is to segment foci in 2 channels then measure certain colo
 
 
 ## Installation
-Download [this file](https://github.com/FenaOchs/Ochs_et_al.2023/releases/download/v1/SIMinspector_Subobject_Fiji.ijm). Then in Fiji go to `Plugins > Install`, select the newly downloaded file and save in your Fiji Plugins folder. 
+Download [this file](https://github.com/FenaOchs/Ochs_et_al.2023/releases/download/v1/SIMinspector_Subobject_Fiji.ijm). Then in Fiji go to `Plugins > Install...`, select the newly downloaded file and save in your Fiji Plugins folder. 
 `SIMinspector_Subobject_Fiji` will then appear in your Plugins menu.
 
 

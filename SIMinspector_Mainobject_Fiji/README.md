@@ -6,7 +6,7 @@ The aim of this macro is to segment the nucleus, mask it, crop the image then sa
 This macro will assume that the largest object in the image is the nucleus that needs to be saved. If there is more that one nucleus per image then only the largest one will be kept. If you have more than one nucleus then simply either loose one or separate them before running the macro.
 
 ## Installation
-Download [this file](https://github.com/FenaOchs/Ochs_et_al.2023/releases/download/v1/SIMinspector_Mainobject_Fiji.ijm). Then in Fiji go to `Plugins > Install`, select the newly downloaded file and save in your Fiji Plugins folder. 
+Download [this file](https://github.com/FenaOchs/Ochs_et_al.2023/releases/download/v1/SIMinspector_Mainobject_Fiji.ijm). Then in Fiji go to `Plugins > Install...`, select the newly downloaded file and save in your Fiji Plugins folder. 
 `SIMinspector_Mainobject_Fiji` will then appear in your Plugins menu.
 
 ## Dependencies

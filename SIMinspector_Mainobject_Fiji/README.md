@@ -1,8 +1,7 @@
 The aim of this macro is to segment the nucleus, mask it, crop the image then save it.
 
-### :heavy_exclamation_mark: For the last release of this project follow this [link](https://github.com/LiorPytowski/SIMinspector) :heavy_exclamation_mark: 
 
-### :warning: Important :warning: 
+### Important:
 This macro will assume that the largest object in the image is the nucleus that needs to be saved. If there is more that one nucleus per image then only the largest one will be kept. If you have more than one nucleus then simply either loose one or separate them before running the macro.
 
 ## Installation
@@ -47,3 +46,5 @@ Final options:
 ## Overview of the workflow:
 
 <img src="https://github.com/FenaOchs/Ochs_et_al.2023/blob/main/Images_Documentation/Macro1_workflow_diagram.png" alt="MacroWorkflow" width="634" height="1303">
+
+#### For the last release of this project follow this [link](https://github.com/LiorPytowski/SIMinspector)

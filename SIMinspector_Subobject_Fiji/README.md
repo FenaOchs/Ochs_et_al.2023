@@ -1,6 +1,5 @@
 The aim of this macro is to segment foci in 2 channels then measure certain coloc-related parameters. It was designed to be used after Macro_1 although it may not be essential.
 
-### :heavy_exclamation_mark: For the last release of this project follow this [link](https://github.com/LiorPytowski/SIMinspector) :heavy_exclamation_mark: 
 
 ## Installation
 Download [this file](https://github.com/FenaOchs/Ochs_et_al.2023/releases/download/v1/SIMinspector_Subobject_Fiji.ijm). Then in Fiji go to `Plugins > Install`, select the newly downloaded file and save in your Fiji Plugins folder. 
@@ -120,3 +119,6 @@ They are:
 		* MEAN_DISTANCE_TO_CENTROID
 		* MAX_DISTANCE_TO_CENTROID
 		* MAX_MEAN_DISTANCE_TO_CENTROID_RATIO
+		
+		
+#### For the last release of this project follow this [link](https://github.com/LiorPytowski/SIMinspector)

@@ -121,4 +121,4 @@ They are:
 		* MAX_MEAN_DISTANCE_TO_CENTROID_RATIO
 		
 		
-#### For the last release of this project follow this [link](https://github.com/LiorPytowski/SIMinspector)
+#### For the last release of this project follow this [link](https://github.com/LiorPytowski/SIMinspector).

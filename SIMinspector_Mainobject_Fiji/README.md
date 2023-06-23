@@ -47,4 +47,4 @@ Final options:
 
 <img src="https://github.com/FenaOchs/Ochs_et_al.2023/blob/main/Images_Documentation/Macro1_workflow_diagram.png" alt="MacroWorkflow" width="634" height="1303">
 
-#### For the last release of this project follow this [link](https://github.com/LiorPytowski/SIMinspector)
+#### For the last release of this project follow this [link](https://github.com/LiorPytowski/SIMinspector).

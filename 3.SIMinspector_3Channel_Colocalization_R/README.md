@@ -15,7 +15,7 @@ To move on to three-way colocalization, run script 2/2 in order to measure partn
 After script 2/2 is finished, the directory will contain histograms and tables for C2 versus C3 results as well as a new .csv file containing the information of three-way partnership. In the last three columns, partnership of each analysed spot in C2 with a)C1, b)C3 and c)both C1 and C3 will be listed in binary form.
 In addition, the directory will contain the three-way partnership histogram (green) for all cells. 
 
-<img src="https://github.com/FenaOchs/Ochs_et_al.2023/blob/main/Images_Documentation/R-script%20cartoon.png" alt="Three-way colocalization scheme" width="862" height="600">
+<img src="https://github.com/FenaOchs/Ochs_et_al.2023/blob/main/Images_Documentation/R-script%20cartoon.png" alt="Three-way colocalization scheme" width="500" height="400">
 
 #### Note: 
 As it stands, this script uses C2 as the channel used as basis for partnership search. If your dataset is structured differently, we suggest re-arranging channels in Fiji as there currently is no option to start from channels 1 or 3.

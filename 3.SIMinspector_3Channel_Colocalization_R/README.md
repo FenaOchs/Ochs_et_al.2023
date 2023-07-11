@@ -1,5 +1,5 @@
 #### Installation
-Go to R-studio and load the following R [file](https://github.com/FenaOchs/Ochs_et_al.2023/releases/download/v1/SIMinspector_3Channel_Colocalization.Rmd)
+Go to R-studio and load the following R [file](https://github.com/FenaOchs/Ochs_et_al.2023/releases/download/v1/SIMinspector_3Channel_Colocalization.Rmd).
 
 #### Dependencies
 Please install the tidyverse library.

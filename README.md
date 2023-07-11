@@ -20,4 +20,4 @@ In order to identify subobjects in up to three channels inside the segmented mai
 
 Step 3/3: Investigate spatial relationship and estimate foci partnership
 Go to R-studio and load the R markdown file named SIminspector_3Channel_Colocalization.Rmd containing 2 analysis scripts that will work on the 3 channel-specific .csv files generated in the previous step. Script 1/2 analyses for each spot in C2 whether a partner in C1 exists. Script 2/2 repeats this process to search for a partner in C3. This script produces histograms for individual and pooled input data as well as a .csv file containing information on two-way and three-way partnership in binary form.
-![image](https://github.com/FenaOchs/Ochs_et_al.2023/assets/122902650/4308308f-74a6-44d8-91c2-55afb3f30d98)
+

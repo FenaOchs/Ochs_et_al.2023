@@ -1,10 +1,10 @@
 This repository contains the materials associated with the publication "Sister chromatid cohesion is mediated by individual cohesin complexes" by Ochs et al., 2023.
 
 #### List of scripts
-1) SIMinspector_Mainobject_Fiji: Documentation and script [here](https://github.com/FenaOchs/Ochs_et_al.2023/tree/main/1)SIMinspector_Mainobject_Fiji)  
-2) SIMinspector_Subobject_Fiji: Documentation and script [here](https://github.com/FenaOchs/Ochs_et_al.2023/tree/main/2)SIMinspector_Subobject_Fiji)
+1) SIMinspector_Mainobject_Fiji: Documentation and script [here](https://github.com/FenaOchs/Ochs_et_al.2023/tree/main/1.SIMinspector_Mainobject_Fiji)  
+2) SIMinspector_Subobject_Fiji: Documentation and script [here](https://github.com/FenaOchs/Ochs_et_al.2023/tree/main/2.SIMinspector_Subobject_Fiji)
 3) SIMinspector_3Channel_Colocalization: Documentaton and script [here](
-https://github.com/FenaOchs/Ochs_et_al.2023/tree/main/3)SIMinspector_3Channel_Colocalization_R)
+https://github.com/FenaOchs/Ochs_et_al.2023/tree/main/3.SIMinspector_3Channel_Colocalization_R)
 
 #### What is SIMinspector?
 SIMinspector is an image analysis pipeline that allows studying spatial relationship between spots identified in 3D super-resolution Structured Illumination Microscopy (SIM) images. Specifically, it allows the analysis of partnership between nuclear spots of interest and other spots (up to 2 more species) based on spatial proximity. 

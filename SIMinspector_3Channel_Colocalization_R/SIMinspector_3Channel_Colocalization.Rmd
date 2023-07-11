@@ -1,0 +1,292 @@
+---
+title: "SIMInspector"
+output: html_document
+---
+
+<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+Brief synopsis:
+-Scripts 1/2 and 2/2 assume that spot data provided in .csv format originates from 3 channels (C1, C2, C3). 
+ Such data is generated using SIMinspector_Subobject_Fiji plugin:
+ https://github.com/FenaOchs/Ochs_et_al.2023/tree/main/SIMinspector_Subobject_Fiji
+-In order to run this script, the 'tidyverse' package must be installed.
+-Script 1/2 studies partnership between C2 and C1 (i.e. for every spot in C2 provides information whether a C1 partner is found)
+-Script 2/2 studies partnership between C2 and C3 (i.e. for every spot in C2 provides information whether a C3  partner is found) 
+ and summarizes results from both scripts.
+-Press green arrow-head on right hand side above each scripts to run the scripts!
+-Please note: currently C2 is used as basis for partnership search.
+-Attention: words "spot" and "focus" used interchangeably throughout script and refer to subobjects.
+<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+
+```{r}
+# SCRIPT 1/2 - Study partnership between spots in channel C2 and channel C1 #
+############################################################################
+# INPUT:  path to directory 'data' containing ONLY .csv tables with foci coordinates obtained generated using SIMinspector_Subobject_Fiji
+#         ImageJ/FiJi plugin; three .csv files per single cell are expected for 3-channel data (C1-C3) in the directory 'data'.
+#         Note: each channel's .csv files are recognised based on 'C1', 'C2', 'C3' in their names.
+#         Example .csv file name recognised by the script:  '20221109_dyemixing_014_C2.csv'
+#         Please, introduce the user defined parameters below. 
+# OUTPUT: Results on partneship for C2 spots in C1  with numbers and histograms saved to the 'data' directory
+#         Histograms of partnership for individual cells (grey) and pooled histograms for all the cells (black) 
+# NEXT :  Run Script 2/2 to obtain the same data for C2-C3 and the general summary
+###########################################################################
+library(tidyverse);         # load required package
+
+############# User defined parameters: #############
+data<-"C:/test file"        # indicate path to the directory containing .csv files from SIMinspector_Subobject_Fiji plugin
+C2.minVol.threshold <- 100  # in voxels. This means exclude C2 spots larger than 100 voxels. 
+#C2.maxVol.threshold <- 1   # inactive, volume threshold to exclude small C2 spots (in voxel), use with line 56
+#C1.minVol.threshold <-1    # inactive, volume threshold to exclude large C1 spots (in voxel), use with line 60
+xy.dist.threshold <- 0.140  # in um, below this distance partnership between C2 and C1 is assumed
+z.dist.threshold <- 2.5724*xy.dist.threshold  # 2.56 is a typical difference in optical resolution between xy and z, change to 1* to simulate spherical dist.thresh, 2.5724 is measured value based on beads SIM FWHM measurements for Ochs et al., 2023
+search.radius <- 1          # in um, measure only distances within 1um of C2-focus, decrease this valuw to accelerate the code but not <xy.dist.treshold
+pxy <-0.0395500             # Voxel sizes in xy in um (SIMinspector_Subobject_Fiji plugin returns coordinates in px values), based on SIM measurements for Ochs et al., 2023.
+pz <- 0.1250000             # Voxel size in z in um, based on SIM measurements for Ochs et al., 2023.
+####################################################
+
+
+
+### Create lists of single-cell files for channel C2 and C1: ###
+file.names.C2 <- list.files(data, full.names = TRUE, recursive = FALSE, pattern = "C2+.csv") # .csv files only 
+file.names.C1 <- list.files(data, full.names = TRUE, recursive = FALSE, pattern = "C1+.csv")
+
+All.distances <-''                   # create empty list to store all C2-C1 distances
+for(b in 1:length(file.names.C2)){   # & & & &      Begin loop over the cell files
+
+focus.C2 <- read.csv(file.names.C2[b])                                # load single cell C2 file
+focus.C2 <- subset(focus.C2, PIXEL_COUNT < C2.minVol.threshold)       # filter out too big C2 spots 
+#focus.C2 <- subset(focus.C2, PIXEL_COUNT > C2.maxVol.threshold) # filter out small nonspecific spots in C2
+cell.name.base <- basename(file.names.C2[b])                          # extract base-name of the cell
+#cell.name <- str_split_fixed(cell.name.base, pattern="_", n=4)[4]    # splits name into 4 bits based on underscores names
+focus.C1 <- read.csv(file.names.C1[b])                                # load single spot.C1 file
+#focus.C1 <- subset(focus.C1, PIXEL_COUNT < C1.minVol.threshold)      # filter out small C1 spots
+
+If.colocalizes <- ''                    # empty list to store information about partnership for C2 spots
+for(c in 1:nrow(focus.C2)){ # $ $ $     # begin loop over C2 spots within a cell
+  x.s <-focus.C2$MASS_CENTER_X[c]       # read out 3D coordinates for a C2 spot (Caution: they are in px not um!)
+  y.s <-focus.C2$MASS_CENTER_Y[c]
+  z.s <-focus.C2$MASS_CENTER_Z[c]
+  # Inspect only C1 spots within search.radius of C2 spot:
+  C1.filtered <- subset(focus.C1, MASS_CENTER_X>(x.s-search.radius/(pxy*2))& MASS_CENTER_X<(x.s+search.radius/(pxy*2)) )
+  C1.filtered <- subset(C1.filtered, MASS_CENTER_Y>(y.s-search.radius/(pxy*2))& MASS_CENTER_Y<(y.s+search.radius/(pxy*2)) )
+  C1.filtered <- subset(C1.filtered, MASS_CENTER_Z>(z.s-search.radius/(pz*2))& MASS_CENTER_Z<(z.s+search.radius/(pz*2)) )
+ 
+    
+   list.oneC2.vs.allC1 <- ''  
+  # 1/2) When no C1 spot found within search.radius: 
+  if(nrow(C1.filtered)==0){dist<-0;
+  list.oneC2.vs.allC1 <- rbind(list.oneC2.vs.allC1, dist)}
+   
+   
+   
+  # 2/2) When C1 spot found within search.radius then test if they are witin ellypsoid corresponding to microscope's resolution:    
+  if(nrow(C1.filtered) > 0){                     # % % %    # < begin loop over C1 spots
+       for(d in 1:nrow(C1.filtered)){ 
+        x.c <-C1.filtered$MASS_CENTER_X[d]       # read out 3D coordinates (brightness weighted version of centroid) for C2 spot c-th
+        y.c <-C1.filtered$MASS_CENTER_Y[d]
+        z.c <-C1.filtered$MASS_CENTER_Z[d]
+        
+  ### Test if a C1 spot is within ellipsoid around C2 spot: ###
+  R<-sqrt( (x.s*pxy-x.c*pxy)^2 + (y.s*pxy-y.c*pxy)^2 + (z.s*pz-z.c*pz)^2)  
+  test.ellypsoid.val<-((x.c-x.s)^2)/(xy.dist.threshold/pxy)^2 + ((y.c-y.s)^2)/(xy.dist.threshold/pxy)^2 + ((z.c-z.s)^2)/(z.dist.threshold/pz)^2   # this is criterium to test if a C1 spot is within ellipsoid embracing C2 focus
+
+         if (test.ellypsoid.val < 1){                              # test if a C1 spot is within ellipsoid representing microscope's resolution
+            dist <- R}else{
+              dist<-0}   
+
+          list.oneC2.vs.allC1 <- rbind(list.oneC2.vs.allC1, dist)  # this is list of distances between all C1 spots and one C2 spot
+          All.distances <- rbind(All.distances, R)   }             # this is list of all distances C2 <-> C1 (within search.radius)
+    }     # % % %                                                  # end loop over C1 spots
+   
+       
+   
+          listy <- as.numeric(list.oneC2.vs.allC1)                 # now test if one C2 spot has a partner identified
+          listy <- listy[ !is.na( listy ) ]
+          if(sum(listy) > 0){answer<-1} else if(sum(listy == 0)){answer<-0}  # if sum of distances is >0 (any R) then it means partnership detected (answer=1)
+          If.colocalizes <-rbind( If.colocalizes, answer)
+  
+}   # $ $ $    end loop over C2 spots within a cell
+If.colocalizes <- If.colocalizes[-1]
+focus.C2.2<-data.frame(focus.C2, If.colocalizes)                                    # create new column in C2 .csv file
+colnames(focus.C2.2)[ncol(focus.C2)+1] <- "Coloc C2-C1"                             # change its name to Coloc C2-C1
+write.csv(focus.C2.2, file = paste(data, "/C2_C1_result_", cell.name.base, sep="")) # save single cell .csv C2 data with extra column
+
+  ### Plot histogram of C2-C1 partnership for a single cell: ###
+  h<-hist(as.numeric(If.colocalizes), breaks = c(-1, 0,1))
+  png(filename = paste(data, "/Partnership_of_C1_with_C2_", cell.name.base, ".png", sep=""),width = 300, height = 480, units = "px", pointsize = 20)
+  barplot(h$counts, names.arg=c("0","1"), main=paste("cell_", b, sep=""), xlab ="No. of C1-partners" , ylab ="Spot count")
+  dev.off()
+
+
+} # & & & &            end loop over all the single-cells found in the directory 'data'
+
+
+
+ ### Plot all C2-C1 distances measured within a search.radius: ###
+          png(filename = paste(data, "/AllDistances_C2_vs_C1", ".png", sep=""),width = 680, height = 360, units = "px", pointsize = 20)
+          hist(as.numeric(All.distances[-1]), xlab ="Distance (um)" , ylab ="Counts", main="All distances between C2-C1 spots", col = "white", 200)
+          abline(v = xy.dist.threshold, col="red", lwd=2, lty=2)
+          dev.off()
+              
+ ### Loop to go through all the files and count % of partnership between C2 and C1 ###          
+          file.names.Results <- list.files(data, full.names = TRUE, recursive = FALSE, pattern = "^C2_C1_result"); percent.colocalizing <-c()
+          for (k in 1:length(file.names.Results)){
+          coloc.cell <- read.csv(file.names.Results[k]); colocs <- coloc.cell$Coloc.C2.C1
+          percent.colocalizing <- c(percent.colocalizing, colocs)}
+          print('% of C2 spots with C1 partner in all cells:')   
+          sum(as.numeric(percent.colocalizing))/length(as.numeric(percent.colocalizing))
+          
+### Make histogram of C2-C1 partnership for all the cells in 'data' directory:  ###
+          hi<-hist(as.numeric(percent.colocalizing), breaks = c(-1, 0,1))
+          png(filename = paste(data, "/_All_Partnership_of_C1_with_C2",  ".png", sep=""),width = 300, height = 480, units = "px", pointsize = 20)
+          barplot(hi$counts, names.arg=c("0","1"), main="All cells C2-C1", xlab ="No. of C1-partners" , ylab ="Spot count", col="black")
+          dev.off()
+```
+
+
+
+```{r}
+# SCRIPT 2/2 - Study partnership between spots in channel C2 and channel C3 and summarize results from both scripts #
+####################################################################################################################
+# INPUT : Same as in Script 1/2, no need to change nor introduce any user-defined parameters here, just press start!
+# OUTPUT: Determines partnership for each C2 spot with spot in C3  with numbers and histograms saved to the 'data' directory
+#         Histograms of partnershup for individual cells (grey), pooled histograms for all the cells (black)  
+#         and summary histograms for all the cells C2 vs C1 & C3 (green)
+####################################################################################################################
+
+### Create lists of single-cell files for channel C2 and C3: ###
+file.names.C2<-list.files(data, full.names = TRUE, recursive = FALSE, pattern = "^C2_C1_result"); # resulting .csv files from Script 1/2
+file.names.C3 <- list.files(data, full.names = TRUE, recursive = FALSE, pattern = "C3+.csv")
+
+
+All.distances <-''                   # create empty list to store all distances
+for(b in 1:length(file.names.C2)){   # & & & &      begin loop over all the cells
+
+focus.C2 <- read.csv(file.names.C2[b])                                 # load single C2 file
+focus.C2 <- subset(focus.C2, PIXEL_COUNT < C2.minVol.threshold)        # filter out C2 spots that are too large
+#focus.C2 <- subset(focus.C2, PIXEL_COUNT > C2.maxVol.threshold)       # filter out small C2 spots
+cell.name.base <- basename(file.names.C2[b])                           # extract name of the cell
+cell.name <- str_split_fixed(cell.name.base, pattern="_", n=4)[4]      # splits name into 4 bits based on underscores, @user: may adapt to your name!
+focus.C3 <- read.csv(file.names.C3[b])                                 # load single-cell file containing C3 spots
+#focus.C3 <- subset(focus.C3, PIXEL_COUNT < C1.minVol.threshold)       # filter out small C2 spots
+
+If.colocalizes <- ''                     # empty list to store information about partnership for all C2 spots
+for(c in 1:nrow(focus.C2)){ # $ $ $      # begin Loop over C2 spots start
+  x.s <-focus.C2$MASS_CENTER_X[c]        # read out 3D coordinates for C2 spots (Caution, coordinates in px, not um!)
+  y.s <-focus.C2$MASS_CENTER_Y[c]
+  z.s <-focus.C2$MASS_CENTER_Z[c]
+  # Inspect only C3 spots within search.radius of C2 spot:
+  C3.filtered <- subset(focus.C3, MASS_CENTER_X>(x.s-search.radius/(pxy*2))& MASS_CENTER_X<(x.s+search.radius/(pxy*2)) )
+  C3.filtered <- subset(C3.filtered, MASS_CENTER_Y>(y.s-search.radius/(pxy*2))& MASS_CENTER_Y<(y.s+search.radius/(pxy*2)) )
+  C3.filtered <- subset(C3.filtered, MASS_CENTER_Z>(z.s-search.radius/(pz*2))& MASS_CENTER_Z<(z.s+search.radius/(pz*2)) )
+   
+   list.oneC2.vs.allC3 <- ''  
+  # 1/2) when no C3 spots found within search.radius: 
+  if(nrow(C3.filtered)==0){dist<-0;
+  list.oneC2.vs.allC3 <- rbind(list.oneC2.vs.allC3, dist)}
+   
+   
+   
+  # 2/2) when C3 spots found within search radius:    
+  if(nrow(C3.filtered) > 0){               # % % %
+       for(d in 1:nrow(C3.filtered)){      # Begin loop over C3 spots within search.radius of C2 spot
+        x.c <-C3.filtered$MASS_CENTER_X[d] # read out 3D coordinates for c-th C2 spot
+        y.c <-C3.filtered$MASS_CENTER_Y[d]
+        z.c <-C3.filtered$MASS_CENTER_Z[d]
+   ### Test if a C3-focus is within ellipsoid around C2 spot: ###
+        
+   R<-sqrt( (x.s*pxy-x.c*pxy)^2 + (y.s*pxy-y.c*pxy)^2 + (z.s*pz-z.c*pz)^2)  
+   test.ellypsoid.val<-((x.c-x.s)^2)/(xy.dist.threshold/pxy)^2 + ((y.c-y.s)^2)/(xy.dist.threshold/pxy)^2 + ((z.c-z.s)^2)/(z.dist.threshold/pz)^2         
+   # this is criterium to test if a C3 spot is within ellipsoid from C2 spot
+        
+   if (test.ellypsoid.val < 1){         # test if a given C3 spot is within ellipsoid embracing a C2 spot
+       dist <- R}else{
+       dist <-0}   
+        
+     list.oneC2.vs.allC3 <- rbind(list.oneC2.vs.allC3, dist)     # this is list of distances between all C3 spots and one C2 spot
+     All.distances <- rbind(All.distances, R)   }                # this is list of all distances C2 <-> C3 (within search.radius)
+    }                                                            # % % %
+   
+       
+          listy <- as.numeric(list.oneC2.vs.allC3)                            # now test if a C2 spot had a partner identified
+          listy <- listy[ !is.na( listy ) ]
+          if(sum(listy) > 0){answer<-1} else if(sum(listy == 0)){answer<-0}   # if sum of distances >0, then there's colocalization (answer=1)
+          If.colocalizes <-rbind( If.colocalizes, answer)
+  
+}# $ $ $
+If.colocalizes <- If.colocalizes[-1]
+focus.C2.2<-data.frame(focus.C2, as.numeric(If.colocalizes))                  # add yes/no (1/0) if C2-C3 partnership identified in the last column
+sum.two.channels<-c(focus.C2.2$Coloc.C2.C1)+c(focus.C2.2$as.numeric.If.colocalizes.)
+focus.C2.2<-data.frame(focus.C2.2, as.numeric(sum.two.channels))
+colnames(focus.C2.2)[ncol(focus.C2)] <- "Coloc C1-C2" 
+colnames(focus.C2.2)[ncol(focus.C2)+1] <- "Coloc C3-C2"                       # name last two columns
+colnames(focus.C2.2)[ncol(focus.C2)+2] <- "Coloc C1/3-C2"
+write.csv(focus.C2.2, file = paste(data, "/C2_C3_result_", cell.name, sep=""))# save single-cell C2 .csv file with C2-c3 partnership in the last column
+
+
+  ### Plot histogram of C2-C3 partnership for a single cell: ###
+  h<-hist(as.numeric(If.colocalizes), breaks = c(-1, 0,1))
+  png(filename = paste(data, "/Partnership_of_C3_with_C2_", cell.name.base, ".png", sep=""),width = 300, height = 480, units = "px", pointsize = 20)
+  barplot(h$counts, names.arg=c("0","1"), main=paste("cell_", b, sep=""), xlab ="No. of C3-partners" , ylab ="Spot count")
+  dev.off()
+
+  
+  ### Plot single cell histogram of C2 partnership with both C1 and C3:
+   hh<-hist(as.numeric(focus.C2.2$`Coloc C1/3-C2`), breaks = c(-1, 0,1, 2))
+   png(filename = paste(data, "/Partnership_of_C1&3_with_C2_", cell.name, ".png", sep=""),width = 300, height = 480, units = "px", pointsize = 20)
+   barplot(hh$counts, names.arg=c("0","1", "2"), main=paste("cell_", b, sep=""), xlab ="No. of C1&C3-partners" , ylab ="Spot count")
+   dev.off()
+    
+  
+} # & & & &            end loop over the cells
+
+
+
+### Plot All distances between C3 and C2: ###
+png(filename = paste(data, "/AllDistances_C2_vs_C3", ".png", sep=""),width = 680, height = 360, units = "px", pointsize = 20)
+hist(as.numeric(All.distances[-1]), xlab ="Distance (um)" , ylab ="Counts", main="All distances between C2-C3 foci", col = "white", 200)
+abline(v = xy.dist.threshold, col="red", lwd=2, lty=2)
+dev.off()
+              
+              
+ ### now loop to go through all the files and count % of colocalization between C2 and C1+C3 ###          
+          file.names.Results <- list.files(data, full.names = TRUE, recursive = FALSE, pattern = "C2_C3_result");            
+          percent.colocalizing <-c()    # to store how many C2 foci have a C1+C3?
+          percent.colocalizing.C3 <-c() # to store how many C2 foci mols have a C1+C3?
+          foci.partners <- c()          # to store data for histogram of 0,1,2 partners
+          for (k in 1:length(file.names.Results)){
+          coloc.cell <- read.csv(file.names.Results[k]); 
+          colocs.C3 <- coloc.cell$Coloc.C3.C2;  percent.colocalizing.C3 <- c(percent.colocalizing, colocs.C3)
+          colocs13 <-coloc.cell$Coloc.C1.3.C2;  foci.partners <- c(foci.partners, colocs13)}
+          print('% of C2 foci having a C3 partner in all cells:')   
+          sum(as.numeric(percent.colocalizing))/length(as.numeric(percent.colocalizing))
+          
+  ### Plot an All-cell histogram of C2 partnership with C3 foci: ###
+          hii<-hist(as.numeric(percent.colocalizing.C3), breaks = c(-1, 0,1))
+          png(filename = paste(data, "/_All_Partnership_of_C3_with_C2",  ".png", sep=""),width = 300, height = 480, units = "px", pointsize = 20)
+          barplot(hii$counts, names.arg=c("0","1"), main="All cells C2-C3", xlab ="No. of C3-partners" , ylab ="Foci count", col="black")
+          dev.off()               
+          
+ ### Plot an All-cell histogram of C2 partnership with both C1 and C3: ###
+          hhh<-hist(as.numeric(foci.partners), breaks = c(-1, 0, 1, 2))
+          png(filename = paste(data, "/_All_Partnership_of_C1&3_with_C2", ".png", sep=""),width = 300, height = 480, units = "px", pointsize = 20)
+          barplot(hhh$counts, names.arg=c("0","1", "2"), main="All cells", xlab ="No. of C1&C3-partners" , ylab ="Foci count", col="#69b3a2")
+          dev.off()
+
+
+ ### save the .csv file with partnership of C1&C3 per each C2 focus:
+          fp<-data.frame(foci.partners); colnames(fp) <- c('partnership')
+          write.csv(fp, file = paste(data, "/_results_1C&3C_partnership_for_C2.csv", sep="")) # save final partnership results
+          hi<-hist(as.numeric(foci.partners)); print('% of 0, 1, 2 foci partners'); 
+          print('counts of 0, 1, 2 foci partners'); subset(hi$counts, hi$counts >0);  
+          print('% of 0, 1, 2 foci partners'); subset(hi$counts, hi$counts >0)/sum(hi$counts)
+
+```
+
+
+
+
+
+
+
+

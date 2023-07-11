@@ -29,12 +29,12 @@ When running the macro the first step is to populate the dialog:
 
 <img src="https://github.com/FenaOchs/Ochs_et_al.2023/blob/main/Images_Documentation/Macro1_dialog.png" alt="DialogMacro1" width="492" height="549">
 
-* You need to choose the directory that contains the images to mask. (No other files should be in that directory)
+* You need to choose the directory that contains the images to mask. No other files should be in that directory.
 * Choose a different folder where the new masked images will be saved.
 * Select a channel to create the mask.
-* A Gaussian blur is applied on the selected channel before thresholding. Set the desired value (default is 10)
-* Set the intensity thresholding method (default is Huang)
-* Define how much space will be left around the nucleus after cropping (0 is usually sufficient because of the blur)
+* A Gaussian blur is applied on the selected channel before thresholding. Set the desired value (default is 10).
+* Set the intensity thresholding method (default is Huang).
+* Define how much space will be left around the nucleus after cropping (default is 0).
 
 
 

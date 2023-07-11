@@ -18,6 +18,6 @@ In a first step the Fiji script “SIMinspector_Mainobject_Fiji” segments the 
 #### Step 2/3: Identify subobjects (spots in nucleus)
 In order to identify subobjects in up to three channels inside the segmented main objects, intensity thresholding and water-shed based segmentation of spot signals is used in the Fiji script “SIMinspector_Subobject_Fiji”. This script produces .csv files containing information on subobjects in each channel including volume, intensity and center position measurements. It further yields two-way partnership measurements based on voxel overlap and distance measurements.
 
-#### Step 3/3: Investigate spatial relationship and estimate foci partnership
+#### Step 3/3: Investigate spatial relationship and estimate spot partnership
 Go to R-studio and load the R markdown file named SIminspector_3Channel_Colocalization.Rmd containing 2 analysis scripts that will work on the 3 channel-specific .csv files generated in the previous step. Script 1/2 analyses for each spot in C2 whether a partner in C1 exists. Script 2/2 repeats this process to search for a partner in C3. This script produces histograms for individual and pooled input data as well as a .csv file containing information on two-way and three-way partnership in binary form.
 
